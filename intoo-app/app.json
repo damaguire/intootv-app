@@ -1,0 +1,12 @@
+{
+  "name": "intoo-app",
+  "displayName": "intoo-app",
+  "expo": {
+    "name": "intoo-app",
+    "slug": "intoo-app",
+    "version": "1.0.0",
+    "assetBundlePatterns": [
+      "**/*"
+    ]
+  }
+}
