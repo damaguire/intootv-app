@@ -25,7 +25,7 @@ import  XpMarket  from './screens/xpMarket';
 import XpDetails  from './screens/xpdetails';
 import  XpCalendar  from './screens/xpCalendar';
 import XPCabin from './screens/xpcabin';
-import XpCabinVideo from './screens/xpCabinVideo';
+
 
 
 
@@ -89,7 +89,7 @@ function MyStack() {
         component={Reset} 
         options={{ headerShown: false}} 
       />
-      <Stack.Screen 
+     <Stack.Screen 
         name="GuestHome" 
         component={GuestHome} 
         options={{ headerShown: false}} 

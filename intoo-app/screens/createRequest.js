@@ -20,7 +20,8 @@ export default class CreateRequest extends React.Component  {
     const state = this.state;
     state[prop] = val;
     this.setState(state);
-  
+    // need to import createTicket into here and call it here with a web3 instance and the
+    // details that user inputs
   }
 
   
