@@ -28,6 +28,7 @@ import XPCabin from './screens/xpcabin';
 import XpCabinVideo from './screens/xpCabinVideo';
 
 
+
 const Stack = createStackNavigator();
 
 function MyStack() {

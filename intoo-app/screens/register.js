@@ -5,7 +5,6 @@ import { TextInput } from 'react-native-gesture-handler';
 import Icon from 'react-native-vector-icons/Entypo';
 
 
-
 export default class Register extends React.Component  {
   state = {
     password:true,

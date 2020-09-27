@@ -1,12 +1,24 @@
 import React, {Component} from 'react';
-import { StyleSheet, Text, View, Image, SafeAreaView} from 'react-native';
+import { StyleSheet, Text, View, Image, SafeAreaView, processColor} from 'react-native';
 import { SocialIcon } from 'react-native-elements';
 
 import { TextInput, TouchableOpacity } from 'react-native-gesture-handler';
 import Carousel from 'react-native-snap-carousel';
 import  Icon  from 'react-native-vector-icons/FontAwesome5';
 
+import { Web3 } from "@react-native-anywhere/anywhere";
+import abis from "./abis";
+import addresses from "./addresses";
 
+const web3 = new Web3(new Web3.providers.HttpProvider("https://mainnet.infura.io/v3/"+process.env.REACT_APP_INFURA_API_KEY))
+const defaultDaiApproveAmount = String(1000 * 1e18);
+web3.eth.getBalance("0x5A0b54D5dc17e0AadC383d2db43B0a0D3E029c4c", function(err, result) {
+  if (err) {
+    console.log(err)
+  } else {
+    console.log(web3.utils.fromWei(result, "ether") + " ETH")
+  }
+})
  
 export default class GuestHome extends Component {
  
@@ -121,6 +133,33 @@ export default class GuestHome extends Component {
         );
     }
 }
+export const renftContract = (web3) =>
+  new web3.eth.Contract(abis.renft, addresses.renft);
+
+export const nftContract = (web3, nftAddress) =>
+  new web3.eth.Contract(abis.erc721, nftAddress);
+
+export const daiContract = (web3, daiAddress) =>
+  new web3.eth.Contract(abis.erc20, daiAddress);
+
+export const rent = async (
+  web3,
+  nftToRentAddress,
+  collateral,
+  daiContract,
+  amount
+) => {
+  // user must approve our contract spending their DAI
+  await daiContract.methods.approve(
+    addresses.renft,
+    amount ? String(amount) : defaultDaiApproveAmount
+  );
+
+  const renft = renftContract(web3);
+
+  // hardcoded for now (the URL bit)
+  await renft.methods.fetchNFTPriceBeforeReturn();
+};
 
 const styles = StyleSheet.create({
     heading: {
