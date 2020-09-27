@@ -7,8 +7,8 @@ import Carousel from 'react-native-snap-carousel';
 import  Icon  from 'react-native-vector-icons/FontAwesome5';
 
 import { Web3 } from "@react-native-anywhere/anywhere";
-import abis from "./abis";
-import addresses from "./addresses";
+import abis from "../contracts/abis";
+import addresses from "../contracts/addresses";
 
 const web3 = new Web3(new Web3.providers.HttpProvider("https://mainnet.infura.io/v3/"+process.env.REACT_APP_INFURA_API_KEY))
 const defaultDaiApproveAmount = String(1000 * 1e18);
