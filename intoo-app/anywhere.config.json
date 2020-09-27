@@ -3,6 +3,8 @@
       { "name": "@react-native-anywhere/polyfill-base64" },
       { "name": "web3-providers-http", "alias": "Web3HttpProvider" },
       { "name": "web3", "alias": "Web3" },
+      { "name": "ethereumjs-tx", "alias": "EthereumjsTx", "exports": [{ "name": "Transaction", "alias": "Tx" }] },
+      { "alias": "HdWalletProvider", "name": "truffle-hdwallet-provider" },
       { 
         "name": "@opengsn/gsn",
         "alias": "OpenGSN",

@@ -4,37 +4,48 @@ import { SocialIcon } from 'react-native-elements';
 import { TextInput, TouchableOpacity } from 'react-native-gesture-handler';
 import Carousel from 'react-native-snap-carousel';
 import  Icon  from 'react-native-vector-icons/FontAwesome5';
-import { Web3 } from "@react-native-anywhere/anywhere";
+
+import "@ethersproject/shims";
+import { ethers, Signer } from "ethers";
 
 import abis from "../contracts/abis";
 import addresses from "../contracts/addresses";
+import { resolve } from 'url';
+import { sign } from 'crypto';
+const infuraProvider = new ethers.providers.InfuraProvider("kovan", "f29fe18b79cf48e9afc2b34546b61712");
+console.log(infuraProvider);
+//let privateKey = "0x3141592653589793238462643383279502884197169399375105820974944592"
+const wallet = ethers.Wallet.createRandom().connect(infuraProvider);
+console.log("wallet",wallet);
+// Sign a text message
+let signPromise = wallet.signMessage("Hello World!")
+console.log(signPromise);
+ const TOO_MUCH = 42_000_000_000;
+// const web3 = new Web3(new Web3.providers.HttpProvider("https://mainnet.infura.io/v3/f29fe18b79cf48e9afc2b34546b61712"));
+// const acc = web3.eth.accounts.create([]);
+// // web3.eth.getBalance("0x5A0b54D5dc17e0AadC383d2db43B0a0D3E029c4c", function(err, result) {
+// //   if (err) {
+// //     console.log(err)
+// //   } else {
+// //     console.log(web3.utils.fromWei(result, "ether") + " ETH")
+// //   }
+// // })
 
-const TOO_MUCH = 42_000_000_000;
-const web3 = new Web3(new Web3.providers.HttpProvider("https://mainnet.infura.io/v3/f29fe18b79cf48e9afc2b34546b61712"));
-
-// web3.eth.getBalance("0x5A0b54D5dc17e0AadC383d2db43B0a0D3E029c4c", function(err, result) {
-//   if (err) {
-//     console.log(err)
-//   } else {
-//     console.log(web3.utils.fromWei(result, "ether") + " ETH")
-//   }
-// })
 
 
 
+// // TODO: rimble like notification at every step. this is a lengthy call
+// // -- consider creating a single smart contract function for all of the below
+// // todo: we need to call approve on the addresses.xpToken
+// // for every user. Otherwise, the transactions will fail
 
-// TODO: rimble like notification at every step. this is a lengthy call
-// -- consider creating a single smart contract function for all of the below
-// todo: we need to call approve on the addresses.xpToken
-// for every user. Otherwise, the transactions will fail
 
-
-    // TODO: that Math.random() is BAD. we will change it later
-    // 1. to create a ticket, a GUEST clicks create (after filling  in
-    // the details on the app). Params such as date, duration, etc. are passed
-    // down into this function
-    // --- we need to ensure that the user has approved our contract
-    // for their XP spending
+//     // TODO: that Math.random() is BAD. we will change it later
+//     // 1. to create a ticket, a GUEST clicks create (after filling  in
+//     // the details on the app). Params such as date, duration, etc. are passed
+//     // down into this function
+//     // --- we need to ensure that the user has approved our contract
+//     // for their XP spending
    
 
 export default class GuestHome extends Component {
@@ -69,39 +80,51 @@ export default class GuestHome extends Component {
         ]
       }
     }
-    ticketFactoryContract(){
-      return new web3.eth.Contract(abis.ticketFactory, addresses.ticketFactory);
+  ticketFactoryContract(){
+      const ticketFactoryInst = new ethers.Contract( addresses.ticketFactory , abis.ticketFactory , infuraProvider )
+      console.log(ticketFactoryInst)
+      return ticketFactoryInst
+      
     }
+
     
     
     xpContract(){
-      return new web3.eth.Contract(abis.xpToken, addresses.xpToken);
+      const xpContractInst = new ethers.Contract(addresses.xpToken, abis.xpToken, infuraProvider);
+      console.log(xpContractInst)
+      return xpContractInst
     }
     
    
 
    async createTicket(
-      web3,  // instance of web3 (you instantiated it already with infura. we need context to pass it around our app)
+      infuraProvider,  // instance of web3 (you instantiated it already with infura. we need context to pass it around our app)
       duration,  // 0 - means 2 mins, 1 - means 5 mins and 2 - means 10 mins
       title,
       description,
       accountSendingFrom
   ){
   
-      const xpInst = this.xpContract(web3);
-      const ticketFactoryInst = this.ticketFactoryContract(web3);
-  
+      const xpInst = this.xpContract();
+      const ticketFactoryInst = this.ticketFactoryContract();
+      console.log("XP",xpInst, ticketFactoryInst)
       // TODO: that Math.random() is BAD. we will change it later
       // 1. to create a ticket, a GUEST clicks create (after filling  in
       // the details on the app). Params such as date, duration, etc. are passed
       // down into this function
       // --- we need to ensure that the user has approved our contract
       // for their XP spending
-      const approveReceipt = await xpInst.methods.approve(
+      console.log("XPPPP",xpInst)
+      const approvedReceipt = await xpInst.approve(
           addresses.ticketFactory,
           "1000000000000000000000",
-      ).messageData;
-  
+      )
+    
+      resolve(xpInst.send({"from":wallet.address, }))
+      Signer.isSigner()
+        
+      await console.log("approved",approvedReceipt)
+      
       // 2. this function calls factory contract to ask chainlink to
       // generate random number. We await the result (this may take a while)
       // I have loaded up our contract with Kovan LINK so that it can do this
@@ -111,7 +134,7 @@ export default class GuestHome extends Component {
       // 3. it succeeds
       // we use the random value to create a QR image
       const chainLinkRandNum = await xpInst.randomResult;
-      chainLinkRandNumString = String(chainLinkRandNum)
+      const chainLinkRandNumString = String(chainLinkRandNum)
       var qrURL = `https://intoo-tv.crypto/${chainLinkRandNumString}`
       // ^ for now just takes this as an input to QR generation
       // TODO: 4. this QR image gets posted to IPFS
@@ -141,29 +164,24 @@ export default class GuestHome extends Component {
       const mintReceipt = await ticketFactoryInst.methods.createTicket(
           duration,
           ticketPropsURI
-      ).messageData;
-  
-      return ticketFactoryInst
+      ).send({"from":wallet.address});
+        
+      console.log(mintReceipt)
+     
   };
 
  async mintReceipt() {
-   await ticketFactoryInst.methods.createTicket(
+   return ticketFactoryInst.methods.createTicket(
       duration,
       ticketPropsURI
-  ).messageData;
+  ).send({"from":wallet.address});
 
-  return {
-      qrURL, // @Sam, this is what you use to gen the QR image
-      approveReceipt,
-      requestRandomNumReceipt,
-      mintReceipt,
-  }
 };
 
-// ^ this over here uses ChainLink and generates the QR Code
-// it is the most important bit for this hackathon
+// // ^ this over here uses ChainLink and generates the QR Code
+// // it is the most important bit for this hackathon
 
-// TODO: need events in the smart contract
+// // TODO: need events in the smart contract
 
 /**
 * @param tokenId - when we have minted the ticket, our smart contract
@@ -172,7 +190,7 @@ export default class GuestHome extends Component {
 * is interested in
 * @param host - the address of the person interested in hosting the event
 */
- async createAccessToEvent(web3, tokenId, host, accountSendingFrom){
+ async createAccessToEvent(infuraProvider, tokenId, host, accountSendingFrom){
   // can only be invoked after createTicket
   // ^ you need to pass an id when you do this
   // and if that id does not exist, you won't be
@@ -184,9 +202,9 @@ export default class GuestHome extends Component {
 
   // Sam, you can use the template above to implement this
   // you won't need everything, though
-
-  const xpInst = xpContract(web3);
-  const ticketFactoryInst = ticketFactoryContract(web3);
+ 
+  const xpInst = xpContract();
+  const ticketFactoryInst = ticketFactoryContract();
 
   // TODO: that Math.random() is BAD. we will change it later
   // 1. to create a ticket, a GUEST clicks create (after filling  in
@@ -196,20 +214,22 @@ export default class GuestHome extends Component {
   // for their XP spending
 
  const approvedMessage= await this.approveReceipt();
-    xpContract.methods.approve(
+    const res = await xpContract.methods.approve(
       addresses.ticketFactory,
       String(TOO_MUCH * 1e18),
-  ).messageData
-  const signedApproove = web3.acc.sign(approvedMessage, acc.privateKey);
-  let x = web3.sendSignedMessage(signedAproove)
- console.log(x);
+  )
+  console.log("res", res)
+ 
+  
+  
+
   // 2. call createAccessToEvent()
   await this.accessNfts();
  xpContract.methods.createAccessToEvent(
       tokenId,
       "ipfs://we-have-stored-other-meta-here.json",
       host
-  ).messageData;
+  ).send({"from":wallet.address});
 };
 
 
@@ -220,28 +240,28 @@ export default class GuestHome extends Component {
     
 
     async componentDidMount() {
-      const web3 = new Web3(new Web3.providers.HttpProvider("https://mainnet.infura.io/v3/f29fe18b79cf48e9afc2b34546b61712"))
-      const defaultDaiApproveAmount = String(1000 * 1e18);
+      // const web3 = new Web3(new Web3.providers.HttpProvider("https://mainnet.infura.io/v3/f29fe18b79cf48e9afc2b34546b61712"))
+      // const defaultDaiApproveAmount = String(1000 * 1e18);
 
-      if (!web3) {
-        throw new Error("web3 is undefined");
-      }
+      // if (!web3) {
+      //   throw new Error("web3 is undefined");
+      // }
 
-      const acc = web3.eth.accounts.create([]);
+     
 
-      if (!acc) {
-        throw new Error("acc is undefined");
-      }
+      // if (!acc) {
+      //   throw new Error("acc is undefined");
+      // }
 
-      // TODO: @Sam is this correct?
-      //Nope
-      this.setState({web3, acc});
-      //this way :)
-      this.setState({web3:web3});
-      this.setState({acc:acc});
+      // // TODO: @Sam is this correct?
+      // //Nope
+      // this.setState({web3, acc});
+      // //this way :)
+      // this.setState({web3:web3});
+      // this.setState({acc:acc});
 
-      console.log(web3)
-      console.log(acc);
+      // console.log(web3)
+      // console.log(acc);
 
       // * this won't work, because acc needs to have some
       // fake kovan eth. otherwise these transactions will fail
@@ -257,10 +277,10 @@ export default class GuestHome extends Component {
       // TODO: in the future add formatter and linter; you might be getting a lot of 
       // issue due to this
       // web3 here is undefined
-      qrURL, approvedReceipt, requestRandomNumReceipt, mintReceipt= await  this.createTicket(web3, 0, "title", "long description",  acc.address);
+    const { qrURL, approvedReceipt, requestRandomNumReceipt, mintReceipt}= await  this.createTicket(infuraProvider, 0, "title", "long description",  wallet.address);
       
       console.log("qrUrl", qrURL);
-      console.log(approveReceipt);
+      console.log(approvedReceipt);
       console.log(requestRandomNumReceipt);
       console.log(mintReceipt);
      }
@@ -348,13 +368,13 @@ export default class GuestHome extends Component {
     }
 }
 export const renftContract = (web3) =>
-  new web3.eth.Contract(abis.renft, addresses.renft);
+  new ethers.Contract(abis.renft, addresses.renft);
 
 export const nftContract = (web3, nftAddress) =>
-  new web3.eth.Contract(abis.erc721, nftAddress);
+  new ethers.Contract(abis.erc721, nftAddress);
 
 export const daiContract = (web3, daiAddress) =>
-  new web3.eth.Contract(abis.erc20, daiAddress);
+  new ethers.Contract(abis.erc20, daiAddress);
 
 export const rent = async (
   web3,

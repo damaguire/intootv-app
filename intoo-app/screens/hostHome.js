@@ -6,18 +6,17 @@ import { TextInput, TouchableOpacity } from 'react-native-gesture-handler';
 import Carousel from 'react-native-snap-carousel';
 import  Icon  from 'react-native-vector-icons/Entypo';
 
-import { Web3 } from "@react-native-anywhere/anywhere";
 
 
-const web3 = new Web3(new Web3.providers.HttpProvider("https://mainnet.infura.io/v3/f29fe18b79cf48e9afc2b34546b61712"))
+// const web3 = new Web3(new Web3.providers.HttpProvider("https://mainnet.infura.io/v3/f29fe18b79cf48e9afc2b34546b61712"))
 
-web3.eth.getBalance("0x5A0b54D5dc17e0AadC383d2db43B0a0D3E029c4c", function(err, result) {
-  if (err) {
-    console.log(err)
-  } else {
-    console.log(web3.utils.fromWei(result, "ether") + " ETH")
-  }
-})
+// web3.eth.getBalance("0x5A0b54D5dc17e0AadC383d2db43B0a0D3E029c4c", function(err, result) {
+//   if (err) {
+//     console.log(err)
+//   } else {
+//     console.log(web3.utils.fromWei(result, "ether") + " ETH")
+//   }
+// })
 
  
 export default class HostHome extends Component {
