@@ -8,8 +8,10 @@ import { Web3 } from "@react-native-anywhere/anywhere";
 
 import abis from "../contracts/abis";
 import addresses from "../contracts/addresses";
+
 const TOO_MUCH = 42_000_000_000;
 const web3 = new Web3(new Web3.providers.HttpProvider("https://mainnet.infura.io/v3/f29fe18b79cf48e9afc2b34546b61712"));
+
 // web3.eth.getBalance("0x5A0b54D5dc17e0AadC383d2db43B0a0D3E029c4c", function(err, result) {
 //   if (err) {
 //     console.log(err)
@@ -108,9 +110,9 @@ export default class GuestHome extends Component {
   
       // 3. it succeeds
       // we use the random value to create a QR image
-      const chainLinkRandNum = await this.xpContract.methods.randomResult();
+      const chainLinkRandNum = await xpInst.randomResult;
       chainLinkRandNumString = String(chainLinkRandNum)
-      const qrURL = `https://intoo-tv.crypto/${chainLinkRandNumString}`
+      var qrURL = `https://intoo-tv.crypto/${chainLinkRandNumString}`
       // ^ for now just takes this as an input to QR generation
       // TODO: 4. this QR image gets posted to IPFS
       let dur;
@@ -141,19 +143,14 @@ export default class GuestHome extends Component {
           ticketPropsURI
       ).messageData;
   
-      return {
-          qrURL, // @Sam, this is what you use to gen the QR image
-          approveReceipt,
-          requestRandomNumReceipt,
-          mintReceipt,
-      }
+      return ticketFactoryInst
   };
 
  async mintReceipt() {
    await ticketFactoryInst.methods.createTicket(
       duration,
       ticketPropsURI
-  ).messageData();
+  ).messageData;
 
   return {
       qrURL, // @Sam, this is what you use to gen the QR image
@@ -203,8 +200,9 @@ export default class GuestHome extends Component {
       addresses.ticketFactory,
       String(TOO_MUCH * 1e18),
   ).messageData
-  const signedApproove = web3.signMessage(approvedMessage, acc.privateKey);
-  web3.sendSignedMessage(signedAproove)
+  const signedApproove = web3.acc.sign(approvedMessage, acc.privateKey);
+  let x = web3.sendSignedMessage(signedAproove)
+ console.log(x);
   // 2. call createAccessToEvent()
   await this.accessNfts();
  xpContract.methods.createAccessToEvent(
@@ -259,8 +257,8 @@ export default class GuestHome extends Component {
       // TODO: in the future add formatter and linter; you might be getting a lot of 
       // issue due to this
       // web3 here is undefined
-      x = await  this.createTicket(web3, 0, "title", "long description",  acc.address);
-      console.log(x);
+      qrURL, approvedReceipt, requestRandomNumReceipt, mintReceipt= await  this.createTicket(web3, 0, "title", "long description",  acc.address);
+      
       console.log("qrUrl", qrURL);
       console.log(approveReceipt);
       console.log(requestRandomNumReceipt);
